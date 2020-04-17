@@ -1,0 +1,15 @@
+{% extends 'template.html' %}
+
+{% block import %}
+{% endblock %}
+
+{% block content_head %} 查看项目 {% endblock %}
+{% block content_inner %}
+{{ project_info }}
+<script>
+    let nav_list = ['首页', '项目', '查看项目'];
+    $(function () {
+        load_nav(nav_list);
+    });
+</script>
+{% endblock %}

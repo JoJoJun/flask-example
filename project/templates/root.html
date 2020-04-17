@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A layout example that shows off a responsive product landing page.">
+    <title>DaaS</title>
+{#    <link rel="stylesheet" href="../static/bootstrap/dist/css/bootstrap.min.css">#}
+    <link rel="stylesheet" href="/static/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/pure-min.css">
+    <link rel="stylesheet" href="/static/custom-css/root.css">
+    <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-old-ie-min.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.1/build/grids-responsive-min.css">
+    <!--<![endif]-->
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="/static/css/layouts/marketing-old-ie.css">
+    <![endif]-->
+    <!--[if gt IE 8]><!-->
+    <link rel="stylesheet" href="/static/css/layouts/marketing.css">
+    <!--<![endif]-->
+
+    <script type = "text/javascript" src="{{ url_for('static', filename = 'js/jquery-3.3.1.min.js') }}"></script>
+    <script type = "text/javascript" src="{{ url_for('static', filename = 'bootstrap/dist/js/bootstrap.min.js') }}"></script>
+    <script type = "text/javascript" src = "{{ url_for('static', filename = 'custom-js/error.js') }}" ></script>
+</head>
+<body>
+
+<div class="header">
+    <div class="home-menu pure-menu pure-menu-horizontal pure-menu-fixed">
+        <a class="pure-menu-heading" href="/">DaaS</a>
+
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item pure-menu-selected"><a href="/" class="pure-menu-link">首页</a></li>
+            {% if user.is_authenticated %}
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link">{{ user.username }}</a></li>
+                <li class="pure-menu-item"><a href="/logout/" class="pure-menu-link">退出</a></li>
+            {% else %}
+                <li class="pure-menu-item"><a href="/login/" class="pure-menu-link">登录</a></li>
+                <li class="pure-menu-item"><a href="/regist/" class="pure-menu-link">注册</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
+{% block content %} {% endblock %}
+
+<div class="content-wrapper" style="min-height: 0;">
+    <div class="footer l-box is-center" style="padding: 0.6em;">
+        <a href="https://github.com/bhsei/20_C" style="color: white;text-decoration: unset;">Github</a>
+        &nbsp;&nbsp;©2020 bhsei/20_C
+    </div>
+</div>
+
+</body>

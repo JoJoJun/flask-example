@@ -1,0 +1,106 @@
+{% extends 'template.html' %}
+
+{% block import %}
+<style>
+    label.required:before {
+        content: '* ';
+        color: red;
+    }
+    .has-feedback label~.form-control-feedback {
+        top: 32px;
+    }
+    .operate-button {
+        margin-bottom: 4%;
+    }
+    .operate-button button{
+        display: flex;
+        float: right;
+        margin-right: 5px;
+    }
+    .form-error {
+        color: darkred;
+        font-size: smaller;
+    }
+</style>
+{% endblock %}
+
+{% block content_head %} 创建项目 {% endblock %}
+{% block content_inner %}
+<form style="width: 60%">
+    <div class="form-group">
+        <label class="required" for="project-name">名称</label>
+        <input type="text" class="form-control" id="project-name" placeholder="必填：项目名称" required>
+    </div>
+    <div class="form-group">
+        <label class="required" for="project-route">路由</label>
+        <input type="text" class="form-control" id="project-route" placeholder="必填：项目路由" required>
+    </div>
+    <div class="form-group">
+        <label for="project-description">描述</label>
+        <textarea class="form-control" rows="5" id="project-description" placeholder="项目描述"></textarea>
+    </div>
+
+    <div class="operate-button">
+        <button type="button" class="btn btn-primary create" disabled="disabled">创建</button>
+        <button type="button" class="btn btn-default cancel">取消</button>
+    </div>
+</form>
+<script>
+    let nav_list = ['首页', '项目', '创建项目'];
+    $(function () {
+        load_nav(nav_list);
+    });
+    $("#project-name, #project-route").blur(function(){
+        // 先清空所有的span元素
+        $(this).parent().children().filter('span').remove();
+        $(this).parent().removeClass('has-error has-feedback');
+        // 校验
+        let content = $(this).val().trim();
+        if(content == ""){
+            let parentDiv = $(this).parent();
+            parentDiv.addClass('has-error has-feedback');
+            let glyphicon = document.createElement('span');
+            glyphicon.setAttribute('class', 'glyphicon glyphicon-remove form-control-feedback');
+            glyphicon.setAttribute('aria-hidden', 'true');
+            let span_fa = document.createElement('span');
+            span_fa.setAttribute('class', 'fa fa-exclamation-triangle form-error');
+            let span_text = document.createElement('span');
+            span_text.setAttribute('class', 'form-error');
+            span_text.innerText = ' 不可为空';
+            parentDiv.append(glyphicon);
+            parentDiv.append(span_fa);
+            parentDiv.append(span_text);
+        }
+        // 按钮禁用/启用
+        if ($('#project-name').val().trim() == '' || $('#project-route').val().trim() == '')
+            $('.create').attr('disabled', true);
+        else
+            $('.create').attr('disabled', false);
+    });
+    $('.cancel').click(function () {
+        window.location = '/index/';
+    });
+    $('.create').click(function () {
+        let pName = document.getElementById('project-name').value;
+        let pRoute = document.getElementById('project-route').value;
+        let pDesc = document.getElementById('project-description').value;
+        let upload_data = {'pName': pName, 'pRoute': pRoute, 'pDesc': pDesc};
+        $.ajax({
+            type: "POST",
+            data: upload_data,
+            dataType: 'json',
+            beforeSend:function () {
+                // $('#loading').show();
+            },
+            success:function(data){
+                // $('#loading').hide();
+                console.log(data)
+                if(data['code'] == 1000)
+                    alert('创建成功');
+                else
+                    alert('创建失败');
+            }
+        });
+    });
+</script>
+{% endblock %}

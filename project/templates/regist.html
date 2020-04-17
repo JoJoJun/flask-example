@@ -1,0 +1,69 @@
+{% extends 'root.html' %}
+
+{% block content %}
+<style>
+	.splash-container{
+		height: 100%;
+	}
+	.splash{
+		top: -15%;
+	}
+	.regist-form{
+		width: 80%;
+		display: inline-block;
+		color: white;
+		border: 3px solid white;
+		padding: 1em 1.6em;
+		border-radius: 5px;
+		line-height: 1em;
+	}
+	.regist-form-head {
+		color: white;
+	}
+</style>
+<div class="splash-container">
+	<div class="splash">
+		<div class="regist-form">
+			<h1 class="regist-form-head">请注册</h1>
+			<form class="pure-form pure-form-stacked" method="POST">
+				<fieldset>
+					<div class="form-item">
+						<label for="username">用户名：</label>
+						<input id="username" name="username" type="text" placeholder="请设置用户名,字符数4-20个" maxlength="20" minlength="4" style="color:black; width: 75%" required >
+					</div>
+
+					<div class="form-item">
+						<label for="password">设置密码：</label>
+						<input id="password" name="password" type="password" placeholder="请设置密码,字符数6-32个" maxlength="32" minlength="6" style="color:black; width: 75%" required >
+					</div>
+
+					<div class="form-item">
+						<label for="password_confum">确认密码：</label>
+						<input id="password_confum" name="password_confum" type="password" placeholder="请确认密码" maxlength="32" minlength="6" style="color:black; width: 75%" required >
+					</div>
+
+					<div class="form-item">
+						<label for="email">邮箱：</label>
+						<input id="email" name="email" type="text" placeholder="请输入合法邮箱" maxlength="100" minlength="6" style="color:black; width: 75%" required >
+					</div>
+
+					<button type="submit" class="pure-button" id="regist-button">注册</button>
+				</fieldset>
+			</form>
+		</div>
+		<!--div class="error-info" style="display:flex">
+			<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+			<ul class="error-text"><li>两次密码不匹配</li></ul>
+		</div-->
+	</div>
+</div>
+<p id='code' style="display: none">{{ code }}</p>
+<script>
+	let target = $('#code');
+	let code = target[0].innerText;
+	if (code === '') {
+		// show_error_msg(3, '两次密码不匹配');
+	}
+	target.remove();
+</script>
+{% endblock %}

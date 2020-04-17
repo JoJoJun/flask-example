@@ -1,0 +1,267 @@
+{% extends 'template.html' %}
+
+{% block import %}
+<link rel="stylesheet" href="/static/bootstrap-table/dist/bootstrap-table.min.css">
+<script type = "text/javascript" src="{{ url_for('static', filename = 'bootstrap-table/dist/bootstrap-table.js') }}"></script>
+<script type = "text/javascript" src="{{ url_for('static', filename = 'bootstrap-table/dist/locale/bootstrap-table-zh-CN.min.js') }}"></script>
+<style>
+    /** bootstrap table 工具栏 **/
+    .fixed-table-toolbar{
+        display: flex;
+        float: right;
+    }
+    .search-input {
+        border-radius: 4px!important;
+    }
+    .form-horizontal .control-label {
+        padding-top: 0;
+    }
+    .form-error {
+        color: darkred;
+        font-size: smaller;
+    }
+</style>
+{% endblock %}
+
+{% block content_head %} 项目 {% endblock %}
+{% block content_inner %}
+<div style="font-weight: bolder;margin-bottom: -40px">
+    <span>项目</span>
+    <span class="badge">{{ data|length }}</span>
+</div>
+<div id="toolbar">
+    <a href="create_project"><button class="btn btn-default" id="create_project">
+        <i class="fa fa-plus-circle" aria-hidden="true"></i>
+        &nbsp;新建项目
+    </button></a>
+</div>
+<table id="project-list" class="table table-striped table-bordered table-hover" style="display: table;"></table>
+<!-- 模态框 修改 -->
+<div class="modal fade" id="edit-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">
+                    编辑项目信息
+                </h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="required col-sm-2 control-label" for="project-id">编号:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="project-id" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required col-sm-2 control-label" for="project-name">名称:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="project-name" placeholder="必填：项目名称" >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required col-sm-2 control-label" for="project-route">路由:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="project-route" placeholder="必填：项目路由" >
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label" for="project-description">描述:</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" rows="5" id="project-description" style="resize: none" placeholder="项目描述" ></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="save-edit">保存更改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 模态框 删除 -->
+<div class="modal fade" id="delete-confirm-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">
+                    请确认
+                </h4>
+            </div>
+            <div class="modal-body">
+                您确定删除<span id="pName" style="font-weight: bold"></span>及其下所有的模型和实例吗？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="delete-yes">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let project_data = {{ data|safe }};
+    let nav_list = ['首页', '项目'];
+    let current_delete_btn;
+    let current_project_id;
+    $(function () {
+        load_nav(nav_list);
+        table_switch(project_data);
+    });
+    $("#project-name, #project-route").blur(function(){
+        // 先清空所有的span元素
+        $(this).parent().children().filter('span').remove();
+        $(this).parent().removeClass('has-error has-feedback');
+        // 校验
+        let content = $(this).val().trim();
+        if(content == ""){
+            let parentDiv = $(this).parent();
+            parentDiv.addClass('has-error has-feedback');
+            let glyphicon = document.createElement('span');
+            glyphicon.setAttribute('class', 'glyphicon glyphicon-remove form-control-feedback');
+            glyphicon.setAttribute('aria-hidden', 'true');
+            let span_fa = document.createElement('span');
+            span_fa.setAttribute('class', 'fa fa-exclamation-triangle form-error');
+            let span_text = document.createElement('span');
+            span_text.setAttribute('class', 'form-error');
+            span_text.innerText = ' 不可为空';
+            parentDiv.append(glyphicon);
+            parentDiv.append(span_fa);
+            parentDiv.append(span_text);
+        }
+        // 按钮禁用/启用
+        if ($('#project-name').val().trim() == '' || $('#project-route').val().trim() == '')
+            $('#save-edit').attr('disabled', true);
+        else
+            $('#save-edit').attr('disabled', false);
+    });
+    $('#save-edit').click(function () {
+        let pId = document.getElementById('project-id').value;
+        let pName = document.getElementById('project-name').value;
+        let pRoute = document.getElementById('project-route').value;
+        let pDesc = document.getElementById('project-description').value;
+        let upload_data = {'pId': pId, 'pName': pName, 'pRoute': pRoute, 'pDesc': pDesc};
+        $.ajax({
+            type: "POST",
+            data: upload_data,
+            dataType: 'json',
+            beforeSend:function () {
+                // $('#loading').show();
+            },
+            success:function(data){
+                // $('#loading').hide();
+                console.log(data);
+                if(data['code'] == 1000)
+                    alert('保存修改成功');
+                else
+                    alert('保存修改失败');
+            }
+        });
+    });
+    $('#delete-yes').click(function () {
+        $.ajax({
+            type: "POST",
+            data: {'project_id': current_project_id},
+            dataType: 'json',
+            success:function(data){
+                let obj = current_delete_btn.closest('tr');
+                obj.animate({opacity:0.0}, 800, 'swing', function(){
+                    $('#project-list').bootstrapTable('remove', {field: 'operation', values: current_project_id});
+                });
+                for(let i = 0; i < project_data.length; i++){
+                    if(project_data[i]['id'] == current_project_id){
+                        project_data.splice(i, 1);
+                        break;
+                    }
+                }
+                $('span[class="badge"]').html(project_data.length);
+            }
+        });
+    })
+    function table_switch(data){
+        let tableData = new Array();
+        for(let i = 0; i < data.length; i++){
+            tableData[i] = new Object();
+            tableData[i].name = data[i].name;
+            tableData[i].model = data[i].model;
+            tableData[i].deploy = data[i].deploy;
+            tableData[i].update_time = data[i].update_time;
+            tableData[i].operation = data[i].id;
+        }
+        let tableColumns = [
+            {field: 'name', title: '名称', sortable: true},
+            {field: 'model', title: '模型', sortable: true},
+            {field: 'deploy', title: '部署', sortable: true},
+            {field: 'update_time', title: '更新时间', sortable: true},
+            {field: 'operation', title: '操作',
+                formatter: function(value,row,index){
+                    let viewBtn   = '<a href=\"project/'+value+'\"><button type="button" class="btn btn-success">查看</button></a>';
+                    let editBtn   = '<button id=\"edit-'+value+'\" type="button" class="btn btn-info" data-toggle="modal" data-target="#edit-modal">修改</button>';
+                    let deleteBtn = '<button id=\"del-'+value+'\" type="button" class="btn btn-danger" data-toggle="modal" data-target="#delete-confirm-modal">删除</button>';
+                    return viewBtn +'&nbsp;'+ editBtn +'&nbsp;'+ deleteBtn;
+                }
+            }
+        ];
+        $('#project-list').bootstrapTable('destroy');
+        $('#project-list').bootstrapTable({
+            columns: tableColumns,
+            data: tableData,
+            width: 10,
+            method: 'post',
+            dataType: 'json',
+            //height: 560,
+            toolbar: '#toolbar',
+            pagination: true,
+            maintainSelected: true,
+            sidePagination: "client",
+            pageNumber: 1,
+            pageSize: 10,
+            pageList: [5, 10, 15, 20, 25],
+            minimumCountColumns: 2,
+            clickToSelect: true,
+            search: true,
+            sortStable: true,
+            // showRefresh: true,
+            showToggle: true,
+            showColumns: true,
+            showFullscreen: true,
+            toolbar:'#toolbar',//工具栏
+            buttonsAlign: "right",
+        });
+        // 刷新表格
+        $(document).on('click', 'button[name="refresh"]', function () {
+            $("#project-list").bootstrapTable('refresh', {
+                url: '/index/'
+            });
+        });
+        // 修改按钮
+        $(document).on('click', 'button[data-target="#edit-modal"]', function () {
+            let id = this.id.split('-')[1];
+            $.ajax({
+                type: "POST",
+                data: {'project_id': id},
+                dataType: 'json',
+                success:function(data){
+                    document.getElementById('project-id').value = id;
+                    document.getElementById('project-name').value = data['pName'];
+                    document.getElementById('project-route').value = data['pRoute'];
+                    document.getElementById('project-description').value = data['pDesc'];
+                }
+            });
+        });
+        // 删除按钮
+        $(document).on('click', 'button[data-target="#delete-confirm-modal"]', function () {
+            current_delete_btn = $(this);
+            current_project_id = this.id.split('-')[1];
+            let pName = '';
+            for(let i = 0; i < project_data.length; i++){
+                if(project_data[i]['id'] == current_project_id)
+                    pName = project_data[i]['name'];
+            }
+            document.getElementById('pName').innerText = pName;
+        })
+    }
+</script>
+{% endblock %}

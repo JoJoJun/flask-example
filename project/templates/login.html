@@ -1,0 +1,60 @@
+{% extends 'root.html' %}
+
+{% block content %}
+<style>
+	.splash-container{
+		height: 100%;
+	}
+	.splash{
+		top: 10px;
+	}
+	.login-form{
+		width: 80%;
+		display: inline-block;
+		color: white;
+		border: 3px solid white;
+		padding: 1em 1.6em;
+		border-radius: 5px;
+		line-height: 1em;
+	}
+	.login-form-head {
+		color: white;
+	}
+</style>
+<div class="splash-container">
+	<div class="splash">
+		<div class="login-form">
+			<h1 class="login-form-head">请登录</h1>
+			<form class="pure-form pure-form-stacked" method="POST">
+				<fieldset>
+					<div class='form-item'>
+						<label for="username">用户名：</label>
+						<input id="username" name="username" type="text" placeholder="请输入用户名/邮箱" maxlength="20" minlength="4" required style="color: black; width: 75%">
+					</div>
+
+					<!--div class="error-info">
+						<i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+						<p class="error-text">用户名或密码错误</p>
+					</div-->
+
+					<div class='form-item'>
+						<label for="password">密码：</label>
+						<input id="password" name="password" type="password" placeholder="请输入密码" maxlength="32" minlength="6" required style="color: black; width: 75%">
+					</div>
+
+					<button type="submit" class="pure-button" id="login-button">登陆</button>
+				</fieldset>
+			</form>
+		</div>
+	</div>
+</div>
+<p id='code' style="display: none">{{ code }}</p>
+<script>
+	let target = $('#code');
+	let code = target[0].innerText;
+	if (code === '1001') {
+		show_error_msg(1, '用户名或密码错误');
+	}
+	target.remove();
+</script>
+{% endblock %}
