@@ -1,7 +1,8 @@
-from flask_sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+from .model import db
 def init_app(app):
     db.init_app(app)
+    with app.app_context():
+        db.create_all()
 #
 # # project/routes/__init__.py
 # # from .users import user_bp

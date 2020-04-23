@@ -1,26 +1,4 @@
-{% extends 'root.html' %}
 
-{% block content %}
-<style>
-	.splash-container{
-		height: 100%;
-	}
-	.splash{
-		top: -15%;
-	}
-	.regist-form{
-		width: 80%;
-		display: inline-block;
-		color: white;
-		border: 3px solid white;
-		padding: 1em 1.6em;
-		border-radius: 5px;
-		line-height: 1em;
-	}
-	.regist-form-head {
-		color: white;
-	}
-</style>
 <div class="splash-container">
 	<div class="splash">
 		<div class="regist-form">
@@ -57,6 +35,7 @@
 		</div-->
 	</div>
 </div>
+{{ msg }}
 <p id='code' style="display: none">{{ code }}</p>
 <script>
 	let target = $('#code');
@@ -66,4 +45,3 @@
 	}
 	target.remove();
 </script>
-{% endblock %}
