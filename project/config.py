@@ -14,5 +14,6 @@ class Config:
     # Database
     # SQLALCHEMY_DATABASE_URI = environ.get('mysql+pymysql://')
     # 之前一直Nonetype 是因为环境变量里没有叫这个的environ
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost/database_name'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:congxinzhiyu1?@49.235.89.185/congxinzhiyu_xcx'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_POOL_RECYCLE = 7200

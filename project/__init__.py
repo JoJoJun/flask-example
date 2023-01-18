@@ -1,12 +1,16 @@
 from flask import Flask,Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from project.routes.views import bp
+from flask_cors import *
 
 # db = SQLAlchemy()
 def create_app():
     from . import models, routes, services
     app = Flask(__name__)
+    CORS(app, supports_credentials=True)
     app.config.from_object('project.config.Config')
+    app.config['JSON_AS_ASCII'] = False
+    app.config['JSONIFY_MIMETYPE'] = "application/json;charset=utf-8"
     # db.init_app(app)
     models.init_app(app)
     routes.init_app(app)
