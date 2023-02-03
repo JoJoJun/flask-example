@@ -8,7 +8,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 
-engine = create_engine('mysql+pymysql://root:congxinzhiyu1?@49.235.89.185/congxinzhiyu_xcx', convert_unicode=True)
+engine = create_engine('mysql+pymysql://root:congxinzhiyu1?@49.235.89.185/congxinzhiyu_xcx', convert_unicode=True,
+                        pool_recycle=3600,pool_pre_ping=True)
 
 db_session = scoped_session(sessionmaker(autocommit=False,autoflush=False,bind=engine))
 Base = declarative_base()

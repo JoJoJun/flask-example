@@ -47,13 +47,23 @@ def get_all_bgs(page_size, page):
     # print(sents_all.items, type(sents_all.items))
     table_data = []
     for bg in bgs_all.items:
-        print(bg.id)
         dic = {}
+        src_all = bg.file_ID
+        src_list = src_all.split("assets")
+        # if len(src_list) >= 2:
+        # path = src_list[1]
+        # TODO 这里上服务器需要改
+        path = src_all
+        # print(path)
+        # path = "/".join(path.split("\\"))
+        # print(path)
+        dic["path"] = path
+        dic["img"] = "require(" + "@/assets/" + path + ")"
+        print(dic["img"])
         dic['date'] = bg.create_time.strftime("%Y-%m-%d")
-        dic['src'] = bg.file_ID
         dic['id'] = bg.id
         table_data.append(dic)
-    # print(table_data)
+    print(len(table_data))
     # total = SentTable.query.count()
     # print("total_num:{}".format(total))
     return table_data

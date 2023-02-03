@@ -5,12 +5,15 @@ from project.models import db
 import os
 import time
 import random
+from PIL import Image
+import io
+import base64
 from sqlalchemy import func
 from project.services.utils import get_logo_switch, get_max_id, get_min_id, get_all_text, get_all_bgs
 
 bp = Blueprint('home', __name__, url_prefix='/')
-basedir = os.path.dirname(os.path.dirname(__file__))
-
+# basedir = os.path.dirname(os.path.dirname(__file__))
+basedir = "F:\daily_5_web\\frontend\yuqing_show-main\yuqing_show-main\src\\assets\\bg_imges"
 @bp.route('/', methods=['GET', 'POST'])
 def home():
     return render_template('helloworld.html')
@@ -29,6 +32,15 @@ def get_all_count():
         'all_bgs':bg_in_db
     })
     # return render_template('helloworld.html')
+@bp.route('/bg_counts', methods=['GET', 'POST'])
+def get_bg_count():
+    print("get all bg")
+    bg_in_db = BgImage.query.count()
+    print(bg_in_db)
+    return jsonify({
+        'status': 0,
+        'bgsAll': bg_in_db,
+    })
 @bp.route('/sent_counts', methods=['GET', 'POST'])
 def get_sent_count():
     print("get all text")
@@ -129,10 +141,45 @@ ALLOWED_EXTENSIONS = set(['png', 'jpg', 'JPG', 'PNG'])
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-@bp.route('/add_image', methods=['GET','POST'])
-def add_image():
+@bp.route('/get_all_bgs', methods=['GET'])
+def get_image():
+    print("here in get image")
+    status = 0
+    res = {}
     data = request.get_json(silent=True)
-    img = request.files.get('photo')
+    print("data", data)
+    page_size = data['pageSize']
+    page = data['page']
+    table_data = get_all_bgs(page_size, page)
+    # sents_all = sents_all[:20]
+    if not table_data:
+        return jsonify({
+            'status': 1,
+            'msg': '未知错误'
+        })
+    return jsonify({
+        'status': 0,
+        'bgs_all': table_data,
+    })
+    # path = os.path.join(basedir, "static")
+    # path = os.path.join(path, "pictures")
+    # imgID = "bg3.jpg"
+    # image_data = open(os.path.join(path, '%s' % imgID), "rb").read()
+    # img_stream = io.BytesIO(image_data)
+    # img = Image.open(img_stream)
+    # imgByteArr = io.BytesIO()
+    # img.save(imgByteArr, format='PNG')
+    # imgByteArr = imgByteArr.getvalue()
+    # print(imgByteArr)
+    # print(len(imgByteArr))
+    # return imgByteArr
+
+
+@bp.route('/add_image', methods=['POST'])
+def add_image():
+    print(request.files)
+    img = request.files.get('file')
+    print(img)
     res = {}
     # check name and style
     if not allowed_file(img.filename):
@@ -143,8 +190,9 @@ def add_image():
     print(name)
     # path = basedir+"/static/pictures/"
     # path = basedir + "\\"
-    path = os.path.join(basedir, "static")
-    path = os.path.join(path, "pictures")
+    # path = os.path.join(basedir, "static")
+    # path = os.path.join(path, "pictures")
+    path = basedir
     file_path = os.path.join(path, img.filename)
     print(file_path)
     img.save(file_path)
@@ -201,11 +249,18 @@ def show_photo(filename):
 # delete photo
 @bp.route('/del_photo', methods=['GET','POST'])
 def delete_photo():
-    name = request.form.get("pic_name")
-    print("get name:", name)
+    print("in del photo")
+    data = request.get_json(silent=True)
+    id = data['id']
+    fileID = data['fileID']
+    print("get id:", id,fileID)
+    # name = request.form.get("pic_name")
+    # print("get name:", name)
     # 查询路径
     res = {}
-    img_session = db.session.query(BgImage).filter_by(p_name=name).first()
+    img_session = db.session.query(BgImage).filter_by(id=id).first()
+    # print(img_session)
+    status = 0
     if img_session:
         file = img_session.file_ID
         print("file=",file)
@@ -217,16 +272,19 @@ def delete_photo():
             delete_ok = True
         except Exception as e:
             msg = "delete error"
+            status = 1
             print(e)
         if delete_ok:
             # 删除文件
             os.remove(file)
             msg = '已删除'
             res['msg'] = msg
+            res['status'] = status
         return jsonify(res)
     else:
         msg = '图片不存在'
         res['msg'] = msg
+        res['status'] = 1
         return jsonify(res)
 
 @bp.route('/get_random_sents', methods=['GET', 'POST'])
